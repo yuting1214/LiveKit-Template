@@ -8,17 +8,63 @@ Deploy a fully self-hosted LiveKit voice AI stack on Railway — LiveKit server,
 
 ```
 Railway Project
-├── livekit-server    LiveKit server (TCP-only mode for Railway)
-├── voice-agent       Python AI agent (pipeline or realtime mode)
-├── web-frontend      HTMX test page with audio visualizer
-└── Redis             Session/room state store
+├── livekit-server    Media server — routes audio between clients and agents
+├── voice-agent       Worker process — the AI brain that listens and responds
+├── web-frontend      Web server — test page where you talk to the agent
+└── Redis             State store — room and session coordination
 ```
 
-**Networking:**
-- Browser connects to `livekit-server` via public WSS (Railway domain)
-- Browser connects to `web-frontend` via public HTTPS
-- `voice-agent` connects to `livekit-server` via Railway private networking
-- `livekit-server` connects to `Redis` via private networking
+```
+┌─────────┐  WSS (audio)   ┌────────────────┐  internal   ┌─────────────┐
+│ Browser  │◄──────────────►│ livekit-server  │◄───────────►│ voice-agent │
+│          │                │                 │             │  (worker)   │
+│          │  HTTPS (page)  │                 │   Redis     │             │
+│          │◄──────────────►├────────────────►│◄───────────►│             │
+│          │                │  web-frontend   │             │             │
+└─────────┘                └────────────────┘             └─────────────┘
+```
+
+## Services Explained
+
+### livekit-server — Media Router
+
+The core infrastructure. LiveKit is an open-source WebRTC server that handles real-time audio/video routing. It manages rooms, tracks who's connected, and shuttles audio packets between participants (your browser) and agents.
+
+- Runs in **TCP-only mode** (Railway doesn't support UDP)
+- Generates its config at startup from environment variables
+- Needs a public domain for browser WebSocket connections
+- Uses Redis to coordinate room state
+
+### voice-agent — AI Worker
+
+A **background worker process** (not a web server). It connects outbound to the LiveKit server, registers itself as available, and waits. When a user joins a room, LiveKit dispatches the agent to that room where it:
+
+1. Receives the user's audio stream
+2. Processes it through an AI pipeline (STT → LLM → TTS)
+3. Sends synthesized speech audio back
+
+This is a separate service because:
+- It has no HTTP port — it's a consumer, not a server
+- It can crash/restart without affecting the frontend
+- You can scale it independently (multiple workers for concurrent sessions)
+- Redeploying new AI logic doesn't cause frontend downtime
+
+Supports two modes:
+- **Pipeline** (default) — OpenAI Whisper → GPT-4o-mini → TTS-1 (separate models, more control)
+- **Realtime** — OpenAI Realtime API (single model, lower latency)
+
+### web-frontend — Test Interface
+
+A lightweight FastAPI web server that:
+- Serves an HTMX test page with a "Connect" button and audio visualizer
+- Provides a `/api/token` endpoint that generates LiveKit access tokens
+- The browser uses these tokens + the LiveKit JS SDK to join a room directly
+
+The actual audio never flows through this service — it's just the entry point. Once connected, the browser talks directly to `livekit-server` via WebSocket.
+
+### Redis — State Coordination
+
+Railway-managed Redis instance. LiveKit uses it to track active rooms, participants, and agent assignments. Required for LiveKit server to function.
 
 ## Deploy to Railway
 

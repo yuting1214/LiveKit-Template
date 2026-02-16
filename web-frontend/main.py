@@ -15,7 +15,6 @@ LIVEKIT_URL = os.environ.get("LIVEKIT_URL", "ws://localhost:7880")
 LIVEKIT_API_KEY = os.environ.get("LIVEKIT_API_KEY", "devkey")
 LIVEKIT_API_SECRET = os.environ.get("LIVEKIT_API_SECRET", "secret")
 
-
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {
@@ -38,7 +37,12 @@ async def create_token(request: Request):
         .to_jwt()
     )
 
-    return {"token": token, "url": LIVEKIT_URL, "room": room_name, "identity": identity}
+    return {
+        "token": token,
+        "url": LIVEKIT_URL,
+        "room": room_name,
+        "identity": identity,
+    }
 
 
 if __name__ == "__main__":

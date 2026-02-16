@@ -179,7 +179,6 @@
                     body: JSON.stringify({})
                 });
                 const data = await resp.json();
-
                 // Connect to LiveKit room
                 room = new LivekitClient.Room({
                     audioCaptureDefaults: { autoGainControl: true, noiseSuppression: true },
@@ -200,7 +199,6 @@
                 });
 
                 await room.connect(data.url, data.token);
-                await room.localParticipant.setMicrophoneEnabled(true);
 
                 connected = true;
                 setStatus('connected', `Connected to ${data.room}`);
@@ -208,6 +206,18 @@
                 btn.className = 'btn btn-disconnect';
                 btn.disabled = false;
                 setAgentStatus('Waiting for agent...');
+
+                // Mic enable can fail in constrained/browserless environments.
+                // Keep the room connected and surface a warning instead of failing the whole session.
+                try {
+                    await Promise.race([
+                        room.localParticipant.setMicrophoneEnabled(true),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Microphone setup timeout')), 10000)),
+                    ]);
+                } catch (micErr) {
+                    console.warn('Microphone unavailable:', micErr);
+                    setAgentStatus('Connected (mic unavailable). You can still receive agent audio.');
+                }
 
             } catch (err) {
                 console.error('Connection failed:', err);
