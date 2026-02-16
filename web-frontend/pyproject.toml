@@ -1,0 +1,11 @@
+[project]
+name = "web-frontend"
+version = "0.1.0"
+description = "Lightweight HTMX web frontend for testing LiveKit voice agents"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "livekit-api",
+    "jinja2",
+]

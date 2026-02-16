@@ -1,0 +1,9 @@
+[project]
+name = "voice-agent"
+version = "0.1.0"
+description = "LiveKit voice AI agent with OpenAI (pipeline + realtime modes)"
+requires-python = ">=3.13"
+dependencies = [
+    "livekit-agents[openai,silero]~=1.3",
+    "python-dotenv",
+]
