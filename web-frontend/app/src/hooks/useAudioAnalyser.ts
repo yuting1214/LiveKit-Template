@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react'
 import { createAnalyserFromStream, getRmsLevel } from '@/lib/audio'
 
+interface AnalyserResult {
+  rmsRef: React.RefObject<number>
+}
+
+/**
+ * Analyses a single MediaStream and exposes a live RMS ref.
+ * Uses a shared AudioContext (must be created during user gesture).
+ */
 export default function useAudioAnalyser(
   audioContext: AudioContext | null,
   stream: MediaStream | null,
   isMic: boolean,
-) {
+): AnalyserResult {
   const rmsRef = useRef(0)
 
   useEffect(() => {
@@ -14,7 +22,6 @@ export default function useAudioAnalyser(
       return
     }
 
-    // Ensure context is running (should already be from user gesture)
     audioContext.resume()
 
     let frameId: number
