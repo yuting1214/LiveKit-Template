@@ -1,46 +1,23 @@
-"""Lightweight web frontend for testing the LiveKit voice agent."""
+"""Web frontend for LiveKit voice agent — serves React SPA + token API."""
 
 import os
 import uuid
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from livekit import api
 
-app = FastAPI(title="LiveKit Voice Agent Test")
-templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
+app = FastAPI(title="LiveKit Voice Agent")
 
 LIVEKIT_URL = os.environ.get("LIVEKIT_URL", "ws://localhost:7880")
 LIVEKIT_API_KEY = os.environ.get("LIVEKIT_API_KEY", "devkey")
 LIVEKIT_API_SECRET = os.environ.get("LIVEKIT_API_SECRET", "secret")
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+DIST_DIR = os.path.join(os.path.dirname(__file__), "dist")
 
 
-@app.get("/pipeline", response_class=HTMLResponse)
-async def pipeline(request: Request):
-    return templates.TemplateResponse("pipeline.html", {
-        "request": request,
-        "livekit_url": LIVEKIT_URL,
-        "page_title": "Pipeline Voice Agent",
-        "page_subtitle": "OpenAI STT \u2192 GPT-4o-mini \u2192 TTS",
-        "active_mode": "pipeline",
-    })
-
-
-@app.get("/realtime", response_class=HTMLResponse)
-async def realtime(request: Request):
-    return templates.TemplateResponse("realtime.html", {
-        "request": request,
-        "livekit_url": LIVEKIT_URL,
-        "page_title": "Realtime Voice Agent",
-        "page_subtitle": "OpenAI Realtime API (speech-to-speech)",
-        "active_mode": "realtime",
-    })
-
+# --- API ---
 
 @app.post("/api/token")
 async def create_token(request: Request):
@@ -62,6 +39,18 @@ async def create_token(request: Request):
         "room": room_name,
         "identity": identity,
     }
+
+
+# --- SPA static files ---
+
+if os.path.isdir(os.path.join(DIST_DIR, "assets")):
+    app.mount("/assets", StaticFiles(directory=os.path.join(DIST_DIR, "assets")), name="assets")
+
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    """Catch-all: serve index.html for client-side routing."""
+    return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
 
 if __name__ == "__main__":
