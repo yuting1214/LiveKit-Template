@@ -15,12 +15,30 @@ LIVEKIT_URL = os.environ.get("LIVEKIT_URL", "ws://localhost:7880")
 LIVEKIT_API_KEY = os.environ.get("LIVEKIT_API_KEY", "devkey")
 LIVEKIT_API_SECRET = os.environ.get("LIVEKIT_API_SECRET", "secret")
 
-
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/pipeline", response_class=HTMLResponse)
+async def pipeline(request: Request):
+    return templates.TemplateResponse("pipeline.html", {
         "request": request,
         "livekit_url": LIVEKIT_URL,
+        "page_title": "Pipeline Voice Agent",
+        "page_subtitle": "OpenAI STT \u2192 GPT-4o-mini \u2192 TTS",
+        "active_mode": "pipeline",
+    })
+
+
+@app.get("/realtime", response_class=HTMLResponse)
+async def realtime(request: Request):
+    return templates.TemplateResponse("realtime.html", {
+        "request": request,
+        "livekit_url": LIVEKIT_URL,
+        "page_title": "Realtime Voice Agent",
+        "page_subtitle": "OpenAI Realtime API (speech-to-speech)",
+        "active_mode": "realtime",
     })
 
 
@@ -38,7 +56,12 @@ async def create_token(request: Request):
         .to_jwt()
     )
 
-    return {"token": token, "url": LIVEKIT_URL, "room": room_name, "identity": identity}
+    return {
+        "token": token,
+        "url": LIVEKIT_URL,
+        "room": room_name,
+        "identity": identity,
+    }
 
 
 if __name__ == "__main__":
