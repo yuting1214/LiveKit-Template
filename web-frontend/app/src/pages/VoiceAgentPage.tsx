@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import ModeNav from '@/components/ModeNav'
 import StatusBadge from '@/components/StatusBadge'
 import AuraVisualizer from '@/components/AuraVisualizer'
@@ -25,6 +25,9 @@ const subtitles: Record<string, string> = {
 
 const SPEAKING_THRESHOLD = 0.02
 
+/** Show live audio/state debug overlay — only in dev builds */
+const DEBUG_MONITOR = import.meta.env.DEV
+
 export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
   const {
     status,
@@ -48,10 +51,24 @@ export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
   // Derive aura mode from actual audio levels, not just track subscription state
   const [auraMode, setAuraMode] = useState<AuraMode>('disconnected')
 
+  // Debug monitor state — only updated in dev builds
+  const debugRef = useRef<HTMLDivElement>(null)
+  const updateDebug = useCallback((mic: number, agent: number, mode: AuraMode) => {
+    if (!DEBUG_MONITOR || !debugRef.current) return
+    debugRef.current.textContent =
+      `mic: ${mic.toFixed(3)} | agent: ${agent.toFixed(3)} | mode: ${mode}` +
+      ` | ctx: ${audioContext ? 'running' : 'none'}` +
+      ` | micStream: ${localMicStream ? 'yes' : 'no'}` +
+      ` | agentStream: ${agentAudioStream ? 'yes' : 'no'}`
+  }, [audioContext, localMicStream, agentAudioStream])
+
   useEffect(() => {
     if (status !== 'connected') {
       setAuraMode('disconnected')
       combinedRmsRef.current = 0
+      if (DEBUG_MONITOR && debugRef.current) {
+        debugRef.current.textContent = 'mic: 0.000 | agent: 0.000 | mode: disconnected | ctx: none | micStream: no | agentStream: no'
+      }
       return
     }
 
@@ -77,6 +94,7 @@ export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
 
       combinedRmsRef.current = rms
       setAuraMode(mode)
+      updateDebug(micRms, agentRms, mode)
 
       frameId = requestAnimationFrame(update)
     }
@@ -85,10 +103,17 @@ export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
     return () => {
       cancelAnimationFrame(frameId)
     }
-  }, [status, micRmsRef, agentRmsRef])
+  }, [status, micRmsRef, agentRmsRef, updateDebug])
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0a1014] overflow-hidden">
+      {/* Debug monitor — dev builds only */}
+      {DEBUG_MONITOR && (
+        <div
+          ref={debugRef}
+          className="fixed top-0 left-0 right-0 z-50 bg-black/80 text-[10px] font-mono text-green-400 px-2 py-1 text-center"
+        />
+      )}
       {/* Header — compact on mobile */}
       <div className="shrink-0 pt-safe">
         <div className="pt-3 sm:pt-6 pb-1 sm:pb-2 text-center px-4">
