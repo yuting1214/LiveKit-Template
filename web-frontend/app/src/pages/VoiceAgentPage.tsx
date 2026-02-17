@@ -8,7 +8,6 @@ import AgentStatus from '@/components/AgentStatus'
 import ConnectButton from '@/components/ConnectButton'
 import useLiveKitSession from '@/hooks/useLiveKitSession'
 import useAudioAnalyser from '@/hooks/useAudioAnalyser'
-// ConnectionStatus used by StatusBadge internally
 
 interface VoiceAgentPageProps {
   mode: 'pipeline' | 'realtime'
@@ -49,9 +48,6 @@ export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
   // Derive aura mode from actual audio levels, not just track subscription state
   const [auraMode, setAuraMode] = useState<AuraMode>('disconnected')
 
-  // Debug state
-  const [debugInfo, setDebugInfo] = useState({ micRms: 0, agentRms: 0, mode: 'disconnected' as string })
-
   useEffect(() => {
     if (status !== 'connected') {
       setAuraMode('disconnected')
@@ -86,54 +82,40 @@ export default function VoiceAgentPage({ mode }: VoiceAgentPageProps) {
     }
     frameId = requestAnimationFrame(update)
 
-    // Debug update at lower frequency
-    const debugId = setInterval(() => {
-      setDebugInfo({
-        micRms: micRmsRef.current ?? 0,
-        agentRms: agentRmsRef.current ?? 0,
-        mode: auraMode,
-      })
-    }, 200)
-
     return () => {
       cancelAnimationFrame(frameId)
-      clearInterval(debugId)
     }
-  }, [status, micRmsRef, agentRmsRef, auraMode])
+  }, [status, micRmsRef, agentRmsRef])
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a1014]">
-      {/* Debug overlay — temporary */}
-      {status === 'connected' && (
-        <div className="fixed top-2 right-2 bg-black/70 text-[10px] font-mono text-cyan-400 px-2 py-1 rounded z-50">
-          mic: {debugInfo.micRms.toFixed(3)} | agent: {debugInfo.agentRms.toFixed(3)} | mode: {auraMode} | ctx: {audioContext?.state ?? 'none'} | micStream: {localMicStream ? 'yes' : 'no'} | agentStream: {agentAudioStream ? 'yes' : 'no'}
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="pt-6 pb-2 text-center">
-        <h1 className="text-xl font-semibold text-white mb-1">{titles[mode]}</h1>
-        <p className="text-xs text-neutral-500 mb-4">{subtitles[mode]}</p>
-        <ModeNav activeMode={mode} />
-        <div className="mt-3">
-          <StatusBadge status={status} roomName={roomName} />
+    <div className="flex flex-col h-[100dvh] bg-[#0a1014] overflow-hidden">
+      {/* Header — compact on mobile */}
+      <div className="shrink-0 pt-safe">
+        <div className="pt-3 sm:pt-6 pb-1 sm:pb-2 text-center px-4">
+          <h1 className="text-base sm:text-xl font-semibold text-white mb-0.5 sm:mb-1">{titles[mode]}</h1>
+          <p className="hidden sm:block text-xs text-neutral-500 mb-4">{subtitles[mode]}</p>
+          <p className="sm:hidden text-[10px] text-neutral-500 mb-2">{subtitles[mode]}</p>
+          <ModeNav activeMode={mode} />
+          <div className="mt-2 sm:mt-3">
+            <StatusBadge status={status} roomName={roomName} />
+          </div>
         </div>
       </div>
 
-      {/* Aura */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      {/* Aura — fills remaining space */}
+      <div className="flex-1 min-h-0 flex items-center justify-center px-2 sm:px-4">
         <AuraVisualizer auraMode={auraMode} rmsRef={combinedRmsRef} />
       </div>
 
-      {/* Bottom */}
-      <div className="pb-6 px-4 text-center">
+      {/* Bottom controls — anchored to bottom with safe area */}
+      <div className="shrink-0 pb-2 sm:pb-6 px-3 sm:px-4 text-center pb-safe">
         <AgentStatus text={agentStatusText} />
         {segments.length > 0 && (
-          <div className="max-w-[540px] mx-auto mt-2 mb-4">
+          <div className="max-w-[540px] mx-auto mt-1 sm:mt-2 mb-2 sm:mb-4">
             <TranscriptConsole segments={segments} />
           </div>
         )}
-        <div className="mt-3">
+        <div className="mt-2 sm:mt-3 mb-1">
           <ConnectButton
             status={status}
             onConnect={connect}

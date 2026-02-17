@@ -203,7 +203,7 @@ export default function AuraVisualizer({ auraMode, rmsRef }: AuraVisualizerProps
   }, [rmsRef])
 
   return (
-    <div className="relative w-full aspect-square max-w-[520px] mx-auto">
+    <div className="relative w-full h-full max-w-[520px] max-h-[520px] mx-auto">
       {/* Glow layer — heavy blur for soft bloom */}
       <canvas
         ref={glowRef}

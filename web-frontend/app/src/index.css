@@ -11,3 +11,19 @@
   --color-user: #60a5fa;
   --color-agent: #4ade80;
 }
+
+/* Prevent pull-to-refresh and bounce on mobile */
+html, body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area padding utilities */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
