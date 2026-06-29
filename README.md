@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://railway.com/deploy/OAu9be?referralCode=jk_FgY&utm_medium=integration&utm_source=template&utm_campaign=generic">
+  <a href="https://railway.com/deploy/livekit?referralCode=jk_FgY&utm_medium=integration&utm_source=template&utm_campaign=generic">
     <img src="https://railway.com/button.svg" alt="Deploy on Railway" />
   </a>
 </p>
