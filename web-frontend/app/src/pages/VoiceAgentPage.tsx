@@ -19,7 +19,7 @@ const titles: Record<string, string> = {
 }
 
 const subtitles: Record<string, string> = {
-  pipeline: 'OpenAI STT \u2192 GPT-4o-mini \u2192 TTS',
+  pipeline: 'OpenAI STT \u2192 GPT-5.6 Luna \u2192 TTS',
   realtime: 'OpenAI Realtime API (speech-to-speech)',
 }
 

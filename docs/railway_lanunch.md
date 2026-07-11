@@ -15,7 +15,7 @@ Hosting LiveKit requires running a media server with WebRTC connectivity, a Redi
 ## Dependencies for LiveKit Hosting
 
 - **Redis** — Required by LiveKit server for room state, participant tracking, and agent job dispatch
-- **OpenAI API key** — Powers the voice agent's speech recognition (Whisper), language model (GPT-4o-mini), and text-to-speech (TTS-1)
+- **OpenAI API key** — Powers the voice agent's speech recognition, its GPT-5.6 Luna language model, and natural text-to-speech
 
 ### Deployment Dependencies
 
@@ -28,7 +28,7 @@ Hosting LiveKit requires running a media server with WebRTC connectivity, a Redi
 This template runs LiveKit in **TCP-only mode** since Railway does not support UDP. A Railway TCP proxy (application port `7882`) is used for WebRTC ICE media transport, with an entrypoint script that automatically configures port forwarding via iptables (or haproxy fallback).
 
 The voice agent supports two modes, selected dynamically from the web UI (no restart or environment variable needed) — the frontend creates rooms with a `pipeline-` or `realtime-` prefix and the agent detects the mode from the room name:
-- `pipeline` — OpenAI Whisper → GPT-4o-mini → TTS-1
+- `pipeline` — OpenAI speech-to-text → GPT-5.6 Luna → text-to-speech
 - `realtime` — OpenAI Realtime API (speech-to-speech, lower latency)
 
 ## Why Deploy LiveKit on Railway?
