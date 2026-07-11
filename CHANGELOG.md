@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-07-11
+
+Refresh to the latest OpenAI voice models, a transcript UX fix, and clean logs on self-hosted deployments.
+
+### Models
+- **Pipeline upgraded** — `whisper-1` → `gpt-4o-mini-transcribe` (streaming STT), `gpt-4o-mini` → **GPT-5.6 Luna** (LLM), `tts-1` → `gpt-4o-mini-tts` (TTS).
+- **Realtime upgraded** — `gpt-realtime-2.1-mini` (speech-to-speech).
+- **`livekit-agents` 1.3 → 1.4** (pinned `>=1.4,<1.5`) — needed for streaming transcription support.
+
+### Voice Agent
+- **Turn detection pinned to VAD** (`turn_detection="vad"`) — keeps end-of-utterance detection on the local silero VAD instead of falling back to LiveKit's cloud inference gateway, which returns `401` on self-hosted API keys. Every inference now runs on your own OpenAI account.
+- **Gateway log noise removed** — a narrow filter drops the residual benign `401 "insufficient permissions"` records; real OpenAI errors are unaffected. Verified 8/8 pipeline and 4/4 realtime replies with zero error logs.
+
+### Web Frontend
+- **Transcript console** — no longer snaps to the bottom when you scroll up to read earlier lines mid-conversation, and long words/URLs wrap instead of overflowing the box.
+- **Mode subtitles** updated to reflect the new models.
+
 ## [0.1.0] - 2026-03-22
 
 Initial release of the self-hosted LiveKit voice AI stack — LiveKit server, Python voice agent, Redis, and web frontend — deployable to Railway with only an OpenAI API key.
