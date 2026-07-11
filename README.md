@@ -74,8 +74,8 @@ Supports two modes selected by the web UI (`/pipeline` or `/realtime`):
 
 | Mode | Pipeline | Description |
 |------|----------|-------------|
-| `pipeline` | Whisper STT → GPT-4o-mini → TTS-1 | Separate models, more control |
-| `realtime` | OpenAI Realtime API | Single model, lower latency |
+| `pipeline` | gpt-4o-mini-transcribe → GPT-5.6 Luna → gpt-4o-mini-tts | Separate models, more control |
+| `realtime` | OpenAI Realtime API (gpt-realtime-2.1-mini) | Single model, lower latency |
 
 Mode is selected dynamically via the web UI — the frontend creates rooms with a `pipeline-` or `realtime-` prefix, and the agent detects the mode from the room name.
 

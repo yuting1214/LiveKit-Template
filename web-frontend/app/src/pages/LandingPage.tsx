@@ -4,7 +4,7 @@ const modes = [
   {
     href: '/pipeline',
     title: 'Pipeline',
-    description: 'OpenAI STT \u2192 GPT-4o-mini \u2192 TTS',
+    description: 'OpenAI STT \u2192 GPT-5.6 Luna \u2192 TTS',
   },
   {
     href: '/realtime',
