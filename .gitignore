@@ -28,6 +28,7 @@ docker-compose.override.yml
 *.md
 !README.md
 !CHANGELOG.md
+!docs/railway_lanunch.md
 
 # Claude Code
 .claude/
